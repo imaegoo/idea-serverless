@@ -34,15 +34,12 @@
 
 ### 通过 [Cli](https://www.serverless-devs.com/serverless-devs/install) 部署
 
-**_TODO: 此节待完善，请不要尝试通过下面的命令部署_**
-
-需 Linux 环境，需安装 Node.js。
+需 Linux 环境，需安装 Node.js，按照 Cli 提示一步步操作。
 
 ```sh
-cd src/
-./build.sh
 npm i -g @serverless-devs/s
-s config add
+s init idea-webide
+cd idea-webide
 s deploy
 ```
 
