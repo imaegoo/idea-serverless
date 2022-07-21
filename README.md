@@ -20,9 +20,9 @@
 
 1. 不重复造轮子！截至 2022 年 7 月 14 日，[Google 搜索](https://www.google.com/search?q=deploy+intellij+to+serverless) 中还未出现成功将 Intellij IDE 部署到 Serverless 函数计算的实践案例。
 1. 默认示例使用的 VSCode 难以胜任 Java 等语言开发场景。
-1. 虚拟机级别的多租安全隔离。
-1. 配置同步、代码同步。
-1. 集成 CLI 等常用 FC 开发工具，支持快速开发和测试 FC Java runtime 函数。
+1. TODO: 虚拟机级别的多租安全隔离。
+1. TODO: 配置同步、代码同步。
+1. TODO: 集成 CLI 等常用 FC 开发工具，支持快速开发和测试 FC Java runtime 函数。
 
 ## 使用说明
 
