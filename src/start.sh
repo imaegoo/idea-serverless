@@ -1,5 +1,2 @@
 #!/bin/sh
-ln -s /opt/plugins/ ./ide-server/plugins
-ln -s /opt/lib/ ./ide-server/lib
-ln -s /opt/jbr/ ./ide-server/jbr
-/bin/sh ./ide-server/bin/idea.sh
+java -jar -Xmx256m -Xmx256m -Xmn128m -Xss512k -Dio.netty.leakDetectionLevel=advanced middle-server/target/middle-server.jar

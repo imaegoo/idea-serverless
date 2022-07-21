@@ -40,7 +40,7 @@ services:
         codeUri: .
         environmentVariables:
           PATH: >-
-            /code/src/js/node_modules/.bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+            /code/js/node_modules/.bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
           TZ: "{{ timeZone }}"
         customRuntimeConfig:
           command:

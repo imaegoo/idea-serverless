@@ -14,11 +14,11 @@ jobs:
         with:
           node-version: 16
           registry-url: https://registry.npmjs.org/
-      # - uses: actions/setup-java@v3
-      #   with:
-      #     distribution: 'adopt'
-      #     java-version: '8'
-      #     cache: 'maven'
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'adopt'
+          java-version: '8'
+          cache: 'maven'
       - run: cd src/ && sh ./build.sh && sh ./pre-publish.sh
       - run: npm i -g @serverless-devs/s
       - run: s cli registry login --token ${{ secrets.ALIBABA_REGISTRY_PUBLISH_TOKEN }}

@@ -1,5 +1,9 @@
 #!/bin/sh
 set -x
+echo "building middle server"
+cd middle-server
+mvn package
+cd ..
 echo "installing serverless cli"
 cd js
 npm install
