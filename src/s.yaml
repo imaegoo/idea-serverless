@@ -9,19 +9,19 @@ services:
         - plugin: layer-fc
           args:
             name: ide-jbr
-            codeUri: "https://github.com/imaegoo/idea-serverless/releases/download/0.0.1/ide-jbr.zip"
+            codeUri: ./ide-jbr
             runtime:
               - custom
         - plugin: layer-fc
           args:
             name: ide-lib
-            codeUri: "https://github.com/imaegoo/idea-serverless/releases/download/0.0.1/ide-lib.zip"
+            codeUri: ./ide-lib
             runtime:
               - custom
         - plugin: layer-fc
           args:
             name: ide-plugins
-            codeUri: "https://github.com/imaegoo/idea-serverless/releases/download/0.0.1/ide-plugins.zip"
+            codeUri: ./ide-plugins
             runtime:
               - custom
     props:

@@ -30,7 +30,3 @@ mv ../ide-server/plugins ../ide-plugins
 echo "deleting temp folder"
 cd ..
 rm -rf .temp
-echo "publishing layers"
-s cli fc layer publish --layer-name ide-jbr --code ./ide-jbr --region cn-hangzhou
-s cli fc layer publish --layer-name ide-lib --code ./ide-lib --region cn-hangzhou
-s cli fc layer publish --layer-name ide-plugins --code ./ide-plugins --region cn-hangzhou

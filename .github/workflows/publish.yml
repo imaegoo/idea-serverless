@@ -1,0 +1,20 @@
+name: Publish
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+
+jobs:
+  publish-serverless-hub:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 16
+          registry-url: https://registry.npmjs.org/
+      - run: cd src/ && sh ./build.sh
+      - run: npm i -g @serverless-devs/s
+      - run: s cli registry login --token ${{ secrets.ALIBABA_REGISTRY_PUBLISH_TOKEN }}
+      - run: s cli registry publish

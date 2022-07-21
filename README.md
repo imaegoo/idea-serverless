@@ -1,8 +1,8 @@
 # IntelliJ IDEA on web, but serverless
 
-[![Package type](http://editor.devsapp.cn/icon?package=idea-webide&type=packageType)](https://www.serverless-devs.com)
-[![Package version](http://editor.devsapp.cn/icon?package=idea-webide&type=packageVersion)](http://www.devsapp.cn/details.html?name=idea-webide)
-[![Package download](http://editor.devsapp.cn/icon?package=idea-webide&type=packageDownload)](http://www.devsapp.cn/details.html?name=idea-webide)
+[![Package type](https://editor.devsapp.cn/icon?package=idea-webide&type=packageType)](https://www.serverless-devs.com)
+[![Package version](https://editor.devsapp.cn/icon?package=idea-webide&type=packageVersion)](https://www.devsapp.cn/details.html?name=idea-webide)
+[![Package download](https://editor.devsapp.cn/icon?package=idea-webide&type=packageDownload)](https://www.devsapp.cn/details.html?name=idea-webide)
 
 ## 应用背景
 
