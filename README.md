@@ -30,6 +30,8 @@
 
 ### 通过 [Cli](https://www.serverless-devs.com/serverless-devs/install) 部署
 
+**此节待完善，请不要尝试通过下面的命令部署**
+
 需 Linux 环境，需安装 Node.js。
 
 ```sh
