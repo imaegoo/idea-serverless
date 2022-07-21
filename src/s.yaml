@@ -40,8 +40,8 @@ services:
         codeUri: .
         environmentVariables:
           PATH: >-
-            /opt/ide-server/bin:/opt/ide-server:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-          TZ: "{{ timeZone }}" 
+            /code/src/js/node_modules/.bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+          TZ: "{{ timeZone }}"
         customRuntimeConfig:
           command:
             - ./start.sh
