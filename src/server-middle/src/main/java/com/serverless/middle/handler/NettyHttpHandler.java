@@ -71,6 +71,7 @@ public class NettyHttpHandler extends ChannelInboundHandlerAdapter {
             }
             socket.close(1000, "send msg failed");
             socket = ConnectionManager.getInstance(serverConfig).getWebSocket(channel);
+            ConnectionManager.getInstance(serverConfig).setConnectioned();
             count--;
         }
     }
@@ -93,7 +94,7 @@ public class NettyHttpHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        if (socket != null) {
+        if (socket == null) {
             socket = ConnectionManager.getInstance(serverConfig).getWebSocket(ctx.channel());
             ConnectionManager.getInstance(serverConfig).setConnectioned();
             LOGGER.info("build ws to projector");
