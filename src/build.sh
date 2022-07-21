@@ -11,7 +11,9 @@ curl -LO https://download.jetbrains.com/idea/ideaIC-2021.3.2.tar.gz
 echo "unpacking projector-server"
 unzip projector-server-v1.8.1.zip
 echo "unpacking idea"
-tar -xzvf ideaIC-2021.3.2.tar.gz
+tar -xzf ideaIC-2021.3.2.tar.gz
+# Android 插件插件体积太大，并且绝大多数开发场景用不到，移除之
+rm -rf ./idea-IC-213.6777.52/plugins/android/
 echo "removing existing files"
 rm -rf ../ide-jbr/
 rm -rf ../ide-lib/

@@ -21,7 +21,7 @@ services:
         - plugin: layer-fc
           args:
             name: ide-plugins
-            codeUri: "https://github.com/imaegoo/idea-serverless/releases/download/0.0.1/ide-plugins.zip"
+            codeUri: "https://github.com/imaegoo/idea-serverless/releases/download/0.0.3/ide-plugins.zip"
             runtime:
               - custom
     props:
