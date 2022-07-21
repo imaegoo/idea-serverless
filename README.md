@@ -26,7 +26,7 @@
 
 ### 一键部署
 
-<!-- TODO -->
+[![Deploy with Severless Devs](https://img.alicdn.com/imgextra/i1/O1CN01w5RFbX1v45s8TIXPz_!!6000000006118-55-tps-95-28.svg)](https://fcnext.console.aliyun.com/applications/create?template=idea-webide)
 
 ### 通过 [Cli](https://www.serverless-devs.com/serverless-devs/install) 部署
 
