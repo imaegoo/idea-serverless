@@ -1,5 +1,9 @@
 # IntelliJ IDEA on web, but serverless
 
+[![Package type](http://editor.devsapp.cn/icon?package=idea-webide&type=packageType)](https://www.serverless-devs.com)
+[![Package version](http://editor.devsapp.cn/icon?package=idea-webide&type=packageVersion)](http://www.devsapp.cn/details.html?name=idea-webide)
+[![Package download](http://editor.devsapp.cn/icon?package=idea-webide&type=packageDownload)](http://www.devsapp.cn/details.html?name=idea-webide)
+
 ## 应用背景
 
 在云的时代，我们已经能够轻松地在阿里云函数计算上，部署一个在线版 VSCode。然而 VSCode 的后端开发体验仍然不如 IntelliJ IDE。虽然市面上已经出现了 [Eclipse Che](https://www.eclipse.org/che/)、[云效云端开发平台 DevStudio](https://www.aliyun.com/product/yunxiao/devstudio) 等支持 IntelliJ 的在线开发平台，但是部署复杂、不够轻量。由此引发思考：能不能把 IntelliJ IDE 也搬上 Serverless？享受 Serverless 即搭即用、按量付费的特性呢？
