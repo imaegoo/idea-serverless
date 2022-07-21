@@ -27,7 +27,7 @@ public class ServerConfig extends BaseConfig {
 
     public static final int DEFAULT_SERVER_LOCAL_PORT = 7887;
 
-    private static final String DEFAULT_PROJECTOR_START_SHELL_PATCH = "projector.sh";
+    private static final String DEFAULT_PROJECTOR_START_SHELL_PATCH = "/code/projector.sh";
 
     private static final long DEFAULT_PROJECTOR_CONNECTION_TIMEOUT = 1000 * 20;
 
