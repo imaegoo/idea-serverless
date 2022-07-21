@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ConnectionManager {
 
-    private static final String BASE_URL = "localhost";
+    private static final String BASE_URL = "localhost:8887";
 
     private static final String HTTP_PROTOCOL = "http://";
 
