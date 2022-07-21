@@ -26,7 +26,7 @@
 
 ## 使用说明
 
-您可以体验 [demo 站点](http://idea-fc.idea-service.1064348262863466.cn-hangzhou.fc.devsapp.net/)，也可以一键部署到自己的阿里云账号。
+您可以体验 [demo 站点](http://idea-fc.idea-server.1064348262863466.cn-hangzhou.fc.devsapp.net/)，也可以一键部署到自己的阿里云账号。
 
 ### 一键部署
 
@@ -52,7 +52,7 @@ s deploy
 
 1. 该应用部署在阿里云帐号 1064348262863466 下，杭州区域。
 1. 该应用主要使用了阿里云如下服务：
-    * 函数计算服务，服务名包括 `idea-service`。
+    * 函数计算服务，服务名包括 `idea-server`。
     * OSS服务，bucket名称是 `imaegoo`。
 1. 该应用的实现代码在当前项目下。
 
