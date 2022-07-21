@@ -1,0 +1,73 @@
+edition: 1.0.0
+name: Idea IDE
+access: "{{ access }}"
+services:
+  idea-server:
+    component: fc
+    actions:
+      pre-deploy:
+        - plugin: layer-fc
+          args:
+            name: ide-jbr
+            codeUri: ""
+            runtime:
+              - custom
+        - plugin: layer-fc
+          args:
+            name: ide-lib
+            codeUri: ""
+            runtime:
+              - custom
+        - plugin: layer-fc
+          args:
+            name: ide-plugins
+            codeUri: ""
+            runtime:
+              - custom
+    props:
+      region: "{{ region }}"
+      service:
+        name: "{{ serviceName }}"
+        description: "The idea service."
+        # logConfig: auto  # 如果您需要查看线上函数执行的日志，取消这个注释
+        role: "{{ roleArn }}"
+      function:
+        name: idea-fc
+        description: "The idea server function."
+        timeout: 900 # 最大超时时间为 24 小时，即 86400 秒
+        memorySize: 3072 # 取值范围为 128 MB ~ 3072 MB
+        runtime: custom
+        codeUri: .
+        environmentVariables:
+          PATH: >-
+            /opt/ide-server/bin:/opt/ide-server:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+          TZ: "{{ timeZone }}" 
+        customRuntimeConfig:
+          command:
+            - ./start.sh
+        caPort: 8887
+        instanceConcurrency: 1
+      triggers:
+        - name: http_t
+          type: http
+          config:
+            authType: anonymous
+            methods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - HEAD
+              - OPTIONS
+      customDomains:
+        - domainName: auto
+          protocol: HTTP
+          routeConfigs:
+            - path: /*
+              methods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+                - HEAD
+                - OPTIONS
