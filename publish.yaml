@@ -1,6 +1,6 @@
 Type: Application
 Name: idea-webide
-Version: 0.0.7
+Version: 0.0.8
 Provider:
   - 阿里云
 Description: 基于 custom 运行时的 idea 版本的 serverless webide

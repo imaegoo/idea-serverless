@@ -45,7 +45,7 @@ services:
         customRuntimeConfig:
           command:
             - ./start.sh
-        caPort: 8887
+        caPort: 7887
         instanceConcurrency: 1
       triggers:
         - name: http_t
