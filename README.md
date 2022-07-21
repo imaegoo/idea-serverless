@@ -26,7 +26,7 @@
 
 ## 使用说明
 
-您可以体验 [demo 站点](http://idea-fc.idea-server.1064348262863466.cn-hangzhou.fc.devsapp.net/)，也可以一键部署到自己的阿里云账号。
+~~您可以体验 [demo 站点](http://idea-fc.idea-server.1064348262863466.cn-hangzhou.fc.devsapp.net/)~~ _额度已经耗尽了，demo 站点已删除_，也可以一键部署到自己的阿里云账号。
 
 ### 一键部署
 
