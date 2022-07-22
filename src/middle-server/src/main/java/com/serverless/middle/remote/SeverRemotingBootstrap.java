@@ -36,17 +36,17 @@ public class SeverRemotingBootstrap extends AbstractRemotingBootstrap {
     public SeverRemotingBootstrap(ServerConfig serverConfig, ProjectorServer projectorServer) {
         super(serverConfig);
         this.projectorServer = projectorServer;
-        if (Epoll.isAvailable()) {
-            eventLoopGroupBoss = new EpollEventLoopGroup(serverConfig.getBossThreadSize(),
-                    new NamedThreadFactory(serverConfig.getBossThreadPrefix(), serverConfig.getBossThreadSize()));
-            eventLoopGroupWorker = new EpollEventLoopGroup(serverConfig.getWorkerThreadSize(),
-                    new NamedThreadFactory(serverConfig.getWorkerThreadPrefix(), serverConfig.getWorkerThreadSize()));
-        } else {
+//        if (Epoll.isAvailable()) {
+//            eventLoopGroupBoss = new EpollEventLoopGroup(serverConfig.getBossThreadSize(),
+//                    new NamedThreadFactory(serverConfig.getBossThreadPrefix(), serverConfig.getBossThreadSize()));
+//            eventLoopGroupWorker = new EpollEventLoopGroup(serverConfig.getWorkerThreadSize(),
+//                    new NamedThreadFactory(serverConfig.getWorkerThreadPrefix(), serverConfig.getWorkerThreadSize()));
+//        } else {
             eventLoopGroupBoss = new NioEventLoopGroup(serverConfig.getBossThreadSize(),
                     new NamedThreadFactory(serverConfig.getBossThreadPrefix(), serverConfig.getBossThreadSize()));
             eventLoopGroupWorker = new NioEventLoopGroup(serverConfig.getWorkerThreadSize(),
                     new NamedThreadFactory(serverConfig.getWorkerThreadPrefix(), serverConfig.getWorkerThreadSize()));
-        }
+//        }
     }
 
     @Override

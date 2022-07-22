@@ -23,19 +23,20 @@ public class ShellUtils {
         BufferedReader br = null;
         try {
             // 执行脚本
+            LOGGER.info("begin exec the shell");
             Process ps = Runtime.getRuntime().exec(pathOrCommand);
-            int exitValue = ps.waitFor();
-            if (0 != exitValue) {
-                throw new RuntimeException("call shell failed. error code is :" + exitValue);
-            }
-            // 只能接收脚本echo打印的数据，并且是echo打印的最后一次数据
-            in = new BufferedInputStream(ps.getInputStream());
-            br = new BufferedReader(new InputStreamReader(in));
-            String line;
-            while ((line = br.readLine()) != null) {
-                LOGGER.info("shell output:" + line);
-                result.add(line);
-            }
+//            int exitValue = ps.waitFor();
+//            if (0 != exitValue) {
+//                throw new RuntimeException("call shell failed. error code is :" + exitValue);
+//            }
+//            // 只能接收脚本echo打印的数据，并且是echo打印的最后一次数据
+//            in = new BufferedInputStream(ps.getInputStream());
+//            br = new BufferedReader(new InputStreamReader(in));
+//            String line;
+//            while ((line = br.readLine()) != null) {
+//                LOGGER.info("shell output:" + line);
+//                result.add(line);
+//            }
         } finally {
             if (null != in) {
                 in.close();
