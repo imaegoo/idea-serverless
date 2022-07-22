@@ -18,7 +18,7 @@ public class MiddleRemotingServer implements RemotingServer, Disposable {
     }
 
     @Override
-    public void init() {
+    public void init() throws Exception {
         projectorServer.start();
         severRemotingBootstrap.start();
         ShutdownHook.getInstance().addDisposable(this);

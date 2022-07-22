@@ -2,6 +2,7 @@ package com.serverless.middle.manager;
 
 import com.serverless.middle.config.ServerConfig;
 import com.serverless.middle.http.OKHttpUtil;
+import com.serverless.middle.remote.ProjectorServer;
 import com.serverless.middle.thread.NamedThreadFactory;
 import io.netty.channel.Channel;
 import okhttp3.Response;
@@ -19,6 +20,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ConnectionManager {
+
+    private static Logger LOGGER = LoggerFactory.getLogger(ConnectionManager.class);
 
     private static final String BASE_URL = "localhost:8887";
 
@@ -43,37 +46,55 @@ public class ConnectionManager {
 
     private final ServerConfig serverConfig;
 
-    public static ConnectionManager getInstance(ServerConfig serverConfig) {
+    private Channel channel;
+
+    private ProjectorServer projectorServer;
+
+    public static ConnectionManager getInstance(ServerConfig serverConfig, ProjectorServer projectorServer) {
         if (instance == null) {
             synchronized (ConnectionManager.class) {
                 if (instance == null) {
-                    instance = new ConnectionManager(serverConfig);
+                    instance = new ConnectionManager(serverConfig, projectorServer);
                 }
             }
         }
         return instance;
     }
 
-    public ConnectionManager(ServerConfig serverConfig) {
+    public ConnectionManager(ServerConfig serverConfig, ProjectorServer projectorServer) {
         this.serverConfig = serverConfig;
-        executeService.scheduleAtFixedRate(new ConnectionRunnable(), 60, 1, TimeUnit.SECONDS);
+        this.projectorServer = projectorServer;
+        executeService.scheduleAtFixedRate(new ConnectionRunnable(this.projectorServer), 60, 1, TimeUnit.SECONDS);
     }
 
-    public WebSocket getWebSocket(Channel channel) {
+    public WebSocket getWebSocket(Channel channel) throws Exception {
+        projectorServer.start();
         return OKHttpUtil.getInstance().doConnectionSocket(WS_URL, channel);
     }
 
-    public Response doGet(String url) throws IOException {
+    public Response doGet(String url) throws Exception {
+        projectorServer.start();
         return OKHttpUtil.getInstance().doGetDownLoad(HTTP_URL + url);
     }
 
-    public void setConnectioned() {
+    public void setConnectioned(Channel channel) {
+        setSocketChannel(channel);
         this.isConnectioned.compareAndSet(false, true);
     }
 
     public void setUnConnectioned() {
         this.isConnectioned.compareAndSet(true, false);
+        LOGGER.info("if no new socket connection in {} ms,projector will shutdown",
+                serverConfig.getConnectionTimeout());
         queue.put(new DelayTask(serverConfig.getConnectionTimeout()));
+    }
+
+    public void setSocketChannel(Channel channel) {
+        this.channel = channel;
+    }
+
+    public Channel getSocketChannel() {
+        return this.channel;
     }
 
 
@@ -98,7 +119,14 @@ public class ConnectionManager {
     }
 
     private static class ConnectionRunnable implements Runnable {
+
         private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionRunnable.class);
+
+        private ProjectorServer projectorServer;
+
+        public ConnectionRunnable(ProjectorServer projectorServer) {
+            this.projectorServer = projectorServer;
+        }
 
         @Override
         public void run() {
@@ -106,6 +134,7 @@ public class ConnectionManager {
                 return;
             }
             LOGGER.info("projector will be shutdown");
+            this.projectorServer.destroyShell();
         }
     }
 

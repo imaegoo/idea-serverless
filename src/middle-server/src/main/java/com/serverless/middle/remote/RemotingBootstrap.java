@@ -5,7 +5,7 @@ public interface RemotingBootstrap {
     /**
      * start server
      */
-    void start();
+    void start() throws Exception;
 
     /**
      * shutdown server

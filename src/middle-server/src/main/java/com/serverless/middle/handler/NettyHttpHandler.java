@@ -1,6 +1,7 @@
 package com.serverless.middle.handler;
 
 import com.serverless.middle.config.ServerConfig;
+import com.serverless.middle.controller.RetryController;
 import com.serverless.middle.manager.ConnectionManager;
 import com.serverless.middle.remote.ProjectorServer;
 import io.netty.buffer.ByteBuf;
@@ -20,9 +21,6 @@ import okhttp3.WebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-
 public class NettyHttpHandler extends ChannelInboundHandlerAdapter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NettyHttpHandler.class);
@@ -33,10 +31,13 @@ public class NettyHttpHandler extends ChannelInboundHandlerAdapter {
 
     private ProjectorServer projectorServer;
 
+    private final ConnectionManager connectionManager;
+
 
     public NettyHttpHandler(ServerConfig serverConfig, ProjectorServer server) {
         this.serverConfig = serverConfig;
         this.projectorServer = server;
+        connectionManager = ConnectionManager.getInstance(serverConfig, projectorServer);
     }
 
 
@@ -45,6 +46,7 @@ public class NettyHttpHandler extends ChannelInboundHandlerAdapter {
         if (msg instanceof FullHttpRequest) {
             FullHttpRequest fullHttpRequest = (FullHttpRequest) msg;
             if ("websocket".equals(fullHttpRequest.headers().get("Upgrade"))) {
+                connectionManager.setConnectioned(ctx.channel());
                 ctx.fireChannelRead(msg);
             }
             handleHttpRequest(fullHttpRequest, ctx.channel());
@@ -55,58 +57,60 @@ public class NettyHttpHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
-    private void handleWebSocketFrameRequest(TextWebSocketFrame webSocketFrame, Channel channel) throws InterruptedException {
+    private void handleWebSocketFrameRequest(TextWebSocketFrame webSocketFrame, Channel channel) throws Exception {
         if (socket == null) {
-            socket = ConnectionManager.getInstance(serverConfig).getWebSocket(channel);
+            socket = connectionManager.getWebSocket(channel);
         }
         int count = serverConfig.getRetryCount();
-        while (!socket.send(webSocketFrame.text())) {
-            if (count == 0) {
-                throw new RuntimeException("send msg failed after retry");
-            }
-            LOGGER.error("send msg failed,will retry after 1000ms");
-            TimeUnit.SECONDS.sleep(1000);
-            if (socket != null && socket.send(webSocketFrame.text())) {
-                break;
-            }
-            socket.close(1000, "send msg failed");
-            socket = ConnectionManager.getInstance(serverConfig).getWebSocket(channel);
-            ConnectionManager.getInstance(serverConfig).setConnectioned();
-            count--;
-        }
+        RetryController.doRetry(count, 1000L,
+                () -> socket.send(webSocketFrame.text()),
+                () -> {
+                    if (socket != null && socket.send(webSocketFrame.text())) {
+                        return true;
+                    }
+                    try {
+                        socket = connectionManager.getWebSocket(channel);
+                        connectionManager.setConnectioned(channel);
+                    } finally {
+                        return false;
+                    }
+                });
     }
 
 
-    private void handleHttpRequest(FullHttpRequest request, Channel channel) throws IOException {
+    private void handleHttpRequest(FullHttpRequest request, Channel channel) throws Exception {
         LOGGER.info("uri:{}", request.uri());
-        Response response = ConnectionManager.getInstance(serverConfig).doGet(request.uri());
-        byte[] bytes = response.body().bytes();
-        ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
-        FullHttpResponse fullHttpResponse = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
-                HttpResponseStatus.valueOf(response.code()), byteBuf);
-        for (Pair<? extends String, ? extends String> header : response.headers()) {
-            fullHttpResponse.headers().set(header.getFirst(), header.getSecond());
-        }
-        if (channel.isActive()) {
-            channel.writeAndFlush(fullHttpResponse);
-        }
+        RetryController.doRetry(serverConfig.getRetryCount(), 1000L, () -> {
+            try {
+                Response response = connectionManager.doGet(request.uri());
+                byte[] bytes = response.body().bytes();
+                ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
+                FullHttpResponse fullHttpResponse = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
+                        HttpResponseStatus.valueOf(response.code()), byteBuf);
+                for (Pair<? extends String, ? extends String> header : response.headers()) {
+                    fullHttpResponse.headers().set(header.getFirst(), header.getSecond());
+                }
+                if (channel.isActive()) {
+                    channel.writeAndFlush(fullHttpResponse);
+                }
+                return true;
+            } catch (Exception e) {
+                LOGGER.error("go get error:", e);
+                return false;
+            }
+        });
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        if (socket == null) {
-            socket = ConnectionManager.getInstance(serverConfig).getWebSocket(ctx.channel());
-            ConnectionManager.getInstance(serverConfig).setConnectioned();
-            LOGGER.info("build ws to projector");
-        }
         super.channelActive(ctx);
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        ctx.close();
-        ConnectionManager.getInstance(serverConfig).setUnConnectioned();
-        super.channelInactive(ctx);
+        if (ctx.channel().equals(connectionManager.getSocketChannel())) {
+            connectionManager.setUnConnectioned();
+        }
     }
 
     @Override
