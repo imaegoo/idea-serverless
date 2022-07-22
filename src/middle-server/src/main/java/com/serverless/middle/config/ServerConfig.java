@@ -19,7 +19,7 @@ public class ServerConfig extends BaseConfig {
 
     private static final String PROJECTOR_CONNECTION_TIMEOUT_KEY = "projector.timeout";
 
-    private static final int DEFAULT_WEB_SOCKET_SEND_RETRY_COUNT = 5;
+    private static final int DEFAULT_WEB_SOCKET_SEND_RETRY_COUNT = 10;
 
     public static final Class<? extends ServerChannel> SERVER_CHANNEL_CLAZZ = BaseConfig.SERVER_CHANNEL_CLAZZ;
 
