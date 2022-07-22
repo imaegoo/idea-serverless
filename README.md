@@ -8,7 +8,7 @@
 [![Package type](https://editor.devsapp.cn/icon?package=idea-webide&type=packageType)](https://www.serverless-devs.com)
 [![Package version](https://editor.devsapp.cn/icon?package=idea-webide&type=packageVersion)](https://www.devsapp.cn/details.html?name=idea-webide)
 [![Package download](https://editor.devsapp.cn/icon?package=idea-webide&type=packageDownload)](https://www.devsapp.cn/details.html?name=idea-webide)
-    
+
 ## 应用背景
 
 在云的时代，我们已经能够轻松地在阿里云函数计算上，部署一个在线版 VSCode。然而 VSCode 的后端开发体验仍然不如 IntelliJ IDE。虽然市面上已经出现了 [Eclipse Che](https://www.eclipse.org/che/)、[云效云端开发平台 DevStudio](https://www.aliyun.com/product/yunxiao/devstudio) 等支持 IntelliJ 的在线开发平台，但是部署复杂、不够轻量。由此引发思考：能不能把 IntelliJ IDE 也搬上 Serverless？享受 Serverless 即搭即用、按量付费的特性呢？
@@ -24,10 +24,14 @@
 相比官方给的默认示例，我有什么亮点？
 
 1. 不重复造轮子！截至 2022 年 7 月 14 日，[Google 搜索](https://www.google.com/search?q=deploy+intellij+to+serverless) 中还未出现成功将 Intellij IDE 部署到 Serverless 函数计算的实践案例。
-1. 默认示例使用的 VSCode 难以胜任 Java 等语言开发场景。
-1. TODO: 虚拟机级别的多租安全隔离。
-1. TODO: 配置同步、代码同步。
+1. IDEA 的 Java 开发体验更好，默认示例使用的 VSCode 难以胜任 Java 等语言开发场景。
 1. 集成 CLI 等常用 FC 开发工具，支持快速开发和测试 FC Java runtime 函数。
+
+接下来还要继续实现什么功能？
+
+1. TODO: 配置同步、代码同步。
+1. TODO: 多租安全隔离。
+1. TODO: 首屏加载时间过长。受限于 projector 的启动时间长，可以在 projector 启动过程时先返回一个静态 loading 页，页面风格可以参考云效和 GitHub Codespaces，每秒调 status API 询问启动状态，当启动状态为 true 时，再发起真正的 websocket 连接。
 
 ## 使用说明
 
