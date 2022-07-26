@@ -61,6 +61,16 @@ Parameters:
         service: fc
         authorities:
           - AliyunFCDefaultRolePolicy
+          - AliyunOSSFullAccess
+    ossBucket:
+      title: 对象存储存储桶名
+      type: string
+      default: ''
+      description: 用于 vscode 编辑器 workspace 和 data 的存储， 和函数在同一个 region
+      required: true
+      x-bucket:
+        dependency:
+          - region
     timeZone:
       title: 时区
       type: string
