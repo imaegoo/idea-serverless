@@ -82,9 +82,6 @@ public class OKHttpUtil {
         if (headers != null && headers.size() > 0) {
             consumer.accept(headers);
         }
-//        for (Map.Entry<String, String> header : headers) {
-//            builder.header(header.getKey(), header.getValue());
-//        }
         Request request = builder.get().url(url).build();
         return getOkHttpClient().newWebSocket(request, new WebSocketListener() {
             @Override

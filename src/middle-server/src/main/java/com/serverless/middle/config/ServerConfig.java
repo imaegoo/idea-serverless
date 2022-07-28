@@ -31,7 +31,6 @@ public class ServerConfig extends BaseConfig {
 
     private static final long DEFAULT_PROJECTOR_CONNECTION_TIMEOUT = 1000 * 20;
 
-
     /**
      * get netty boss thread size
      *

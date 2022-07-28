@@ -14,4 +14,5 @@ public class BaseConfig {
     protected static final String DEFAULT_NETTY_WORKER_THREAD_PREFIX = "NettyWorkerThread";
 
     protected static final Class<? extends ServerChannel> SERVER_CHANNEL_CLAZZ = NioServerSocketChannel.class;
+
 }

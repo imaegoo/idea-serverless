@@ -11,7 +11,8 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.ScheduledExecutorService;
@@ -37,7 +38,7 @@ public class ConnectionManager {
 
     private static volatile ConnectionManager instance;
 
-    private static volatile AtomicBoolean isConnectioned = new AtomicBoolean(false);
+    private static final Map<String, WebSocket> CHANNEL_SOCKET_MAP = new ConcurrentHashMap<>(1);
 
     private static final DelayQueue<DelayTask> queue = new DelayQueue<>();
 
@@ -45,8 +46,6 @@ public class ConnectionManager {
             new NamedThreadFactory(CONNECTION_CHECK_THREAD_PREFIX, 1));
 
     private final ServerConfig serverConfig;
-
-    private Channel channel;
 
     private ProjectorServer projectorServer;
 
@@ -69,7 +68,8 @@ public class ConnectionManager {
 
     public WebSocket getWebSocket(Channel channel) throws Exception {
         projectorServer.start();
-        return OKHttpUtil.getInstance().doConnectionSocket(WS_URL, channel);
+        return CHANNEL_SOCKET_MAP.computeIfAbsent(channel.id().asLongText(),
+                k -> OKHttpUtil.getInstance().doConnectionSocket(WS_URL, channel));
     }
 
     public Response doGet(String url) throws Exception {
@@ -77,34 +77,27 @@ public class ConnectionManager {
         return OKHttpUtil.getInstance().doGetDownLoad(HTTP_URL + url);
     }
 
-    public void setConnectioned(Channel channel) {
-        setSocketChannel(channel);
-        this.isConnectioned.compareAndSet(false, true);
+    public void setUnConnectioned(Channel channel) {
+        if (CHANNEL_SOCKET_MAP.containsKey(channel.id().asLongText())) {
+            queue.put(new DelayTask(serverConfig.getConnectionTimeout(), channel));
+        }
     }
-
-    public void setUnConnectioned() {
-        this.isConnectioned.compareAndSet(true, false);
-        LOGGER.info("if no new socket connection in {} ms,projector will shutdown",
-                serverConfig.getConnectionTimeout());
-        queue.put(new DelayTask(serverConfig.getConnectionTimeout()));
-    }
-
-    public void setSocketChannel(Channel channel) {
-        this.channel = channel;
-    }
-
-    public Channel getSocketChannel() {
-        return this.channel;
-    }
-
 
     private static class DelayTask implements Delayed {
+
         private long expireTime;
+
+        private Channel channel;
 
         private long start = System.currentTimeMillis();
 
-        public DelayTask(Long expireTime) {
+        public DelayTask(Long expireTime, Channel channel) {
             this.expireTime = expireTime;
+            this.channel = channel;
+        }
+
+        public Channel getChannel() {
+            return channel;
         }
 
         @Override
@@ -130,11 +123,18 @@ public class ConnectionManager {
 
         @Override
         public void run() {
-            if (queue.poll() == null || isConnectioned.get()) {
+            DelayTask delayTask = queue.poll();
+            if (delayTask == null) {
                 return;
             }
-            LOGGER.info("projector will be shutdown");
-            this.projectorServer.destroyShell();
+            WebSocket socket = CHANNEL_SOCKET_MAP.remove(delayTask.getChannel().id());
+            if (socket != null) {
+                socket.close(1000, "timeout close");
+            }
+            if (CHANNEL_SOCKET_MAP.size() == 0) {
+                LOGGER.info("all channel closed,projector will be shutdown");
+                this.projectorServer.destroyShell();
+            }
         }
     }
 
