@@ -1,5 +1,6 @@
 package com.serverless.middle.config;
 
+import com.serverless.middle.remote.ProjectorServer;
 import io.netty.channel.ServerChannel;
 import io.netty.util.internal.StringUtil;
 
@@ -30,6 +31,10 @@ public class ServerConfig extends BaseConfig {
     private static final String DEFAULT_PROJECTOR_START_SHELL_PATCH = "/code/projector.sh";
 
     private static final long DEFAULT_PROJECTOR_CONNECTION_TIMEOUT = 1000 * 20;
+
+    public static final String IDEA_PROJECT_PATCH = "/root/IdeaProjects/";
+
+    public static final String IDEA_CONFIG_PATCH = "/root/.config/JetBrains/";
 
     /**
      * get netty boss thread size

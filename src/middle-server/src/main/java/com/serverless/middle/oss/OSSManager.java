@@ -6,69 +6,96 @@ import com.aliyun.oss.model.GetObjectRequest;
 import com.aliyun.oss.model.OSSObjectSummary;
 import com.aliyun.oss.model.ObjectListing;
 import com.aliyun.oss.model.PutObjectRequest;
-import com.serverless.middle.Disposable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.List;
 
-public class OSSManager implements Disposable {
+public class OSSManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OSSManager.class);
 
-    private static String endpoint = "oss-cn-hangzhou.aliyuncs.com";
-    private static String accessKeyId = "LTAI5t6Z4W1tq74CjiwvB42e";
-    private static String accessKeySecret = "8hd9h785eyfrgPVWetyw3rTW6ixtkQ";
+    private String endpoint;
 
-    private static String bucketName = System.getenv(OSSManagerFactory.OSS_BUCKET_KEY);
+    private String accessKeyId;
 
-    private static volatile OSS ossInstance;
+    private String accessKeySecret;
 
-    private OSSManager() {
-        ossInstance = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
+    private String workspace;
+
+    private String bucketName = "twl-serverless";
+
+    private static OSSClientBuilder ossClientBuilder = new OSSClientBuilder();
+
+    public OSSManager(String endpoint, String accessKeyId, String accessKeySecret, String workspace) {
+        this.endpoint = endpoint;
+        this.accessKeyId = accessKeyId;
+        this.accessKeySecret = accessKeySecret;
+        this.workspace = workspace;
+    }
+
+    public void batchUploadFile(File parentFile) {
+        OSS ossClient = ossClientBuilder.build(endpoint, accessKeyId, accessKeySecret);
+        try {
+            if (parentFile.isDirectory()) {
+                File[] files = parentFile.listFiles();
+                for (File file : files) {
+                    ossClient.putObject(new PutObjectRequest(bucketName, workspace + "/" + file.getPath(), file));
+                }
+            } else {
+                ossClient.putObject(new PutObjectRequest(bucketName, workspace + "/" + parentFile.getPath(), parentFile));
+            }
+        } finally {
+            if (ossClient != null) {
+                ossClient.shutdown();
+            }
+        }
     }
 
     public void uploadFile(String path, File file) {
-        ossInstance.putObject(new PutObjectRequest(bucketName, path, file));
+        OSS ossClient = ossClientBuilder.build(endpoint, accessKeyId, accessKeySecret);
+        ossClient.putObject(new PutObjectRequest(bucketName, path, file));
     }
 
-    public void downloadList(String prefix, String targetPath) {
-        ObjectListing objectListing = ossInstance.listObjects(bucketName, prefix);
-        List<OSSObjectSummary> objectSummaries = objectListing.getObjectSummaries();
-        for (OSSObjectSummary objectSummary : objectSummaries) {
-            LOGGER.debug("will download:{}", objectSummary.getKey());
-            String key = objectSummary.getKey();
-            String simpleFileName = getSimpleFileName(prefix, key);
-            File file = new File(targetPath);
-            if (!file.exists()) {
-                file.mkdirs();
+    public void batchDownload(String prefix, String targetPath) {
+        OSS ossClient = ossClientBuilder.build(endpoint, accessKeyId, accessKeySecret);
+        try {
+            String userPath = workspace + "/" + prefix;
+            ObjectListing objectListing = ossClient.listObjects(bucketName, userPath);
+            List<OSSObjectSummary> objectSummaries = objectListing.getObjectSummaries();
+            for (OSSObjectSummary objectSummary : objectSummaries) {
+                LOGGER.debug("will download:{}", objectSummary.getKey());
+                String key = objectSummary.getKey();
+                String simpleFileName = getSimpleFileName(userPath, key);
+                File file = new File(targetPath);
+                if (!file.exists()) {
+                    file.mkdirs();
+                }
+                ossClient.getObject(new GetObjectRequest(bucketName, key),
+                        new File(file.getAbsolutePath() + "/" + simpleFileName));
             }
-            downloadFile(key, file + "/" + simpleFileName);
+        } finally {
+            if (ossClient != null) {
+                ossClient.shutdown();
+            }
         }
     }
 
     public void downloadFile(String key, String targetPath) {
-        ossInstance.getObject(new GetObjectRequest(bucketName, key), new File(targetPath));
+        OSS ossClient = ossClientBuilder.build(endpoint, accessKeyId, accessKeySecret);
+        try {
+            ossClient.getObject(new GetObjectRequest(bucketName, key), new File(targetPath));
+        } finally {
+            if (ossClient != null) {
+                ossClient.shutdown();
+            }
+        }
     }
 
     private String getSimpleFileName(String prefix, String key) {
         return key.substring(prefix.length());
     }
 
-    @Override
-    public void destroy() {
-        if (ossInstance != null) {
-            ossInstance.shutdown();
-        }
-    }
-
-    public static class Singleton {
-        private static final OSSManager INSTANCE = new OSSManager();
-
-        public OSSManager getInstance() {
-            return Singleton.INSTANCE;
-        }
-    }
 }
 
