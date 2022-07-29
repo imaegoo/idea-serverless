@@ -4,22 +4,29 @@ import com.serverless.middle.config.ServerConfig;
 import com.serverless.middle.controller.RetryController;
 import com.serverless.middle.manager.ConnectionManager;
 import com.serverless.middle.remote.ProjectorServer;
+import com.serverless.middle.utils.HttpUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import io.netty.util.internal.StringUtil;
 import kotlin.Pair;
 import okhttp3.Response;
 import okhttp3.WebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.UUID;
 
 public class NettyHttpHandler extends ChannelInboundHandlerAdapter {
 
@@ -30,6 +37,8 @@ public class NettyHttpHandler extends ChannelInboundHandlerAdapter {
     private ProjectorServer projectorServer;
 
     private final ConnectionManager connectionManager;
+
+    private static final String WORKSPACE_KEY = "workspace";
 
 
     public NettyHttpHandler(ServerConfig serverConfig, ProjectorServer server) {
@@ -44,6 +53,11 @@ public class NettyHttpHandler extends ChannelInboundHandlerAdapter {
         if (msg instanceof FullHttpRequest) {
             FullHttpRequest fullHttpRequest = (FullHttpRequest) msg;
             if ("websocket".equals(fullHttpRequest.headers().get("Upgrade"))) {
+                String accessKeyId = fullHttpRequest.headers().get("X-Fc-Access-Key-Id");
+                String keySecret = fullHttpRequest.headers().get("X-Fc-Access-Key-Secret");
+                String endpoint = HttpUtils.buildOSSEndpoint(fullHttpRequest.headers().get("X-Fc-Region"));
+                String workspace = HttpUtils.parseRequestParams(fullHttpRequest.uri()).get(WORKSPACE_KEY);
+                connectionManager.initIdea(workspace, accessKeyId, keySecret, endpoint);
                 connectionManager.getWebSocket(ctx.channel());
                 ctx.fireChannelRead(msg);
             }
@@ -77,6 +91,20 @@ public class NettyHttpHandler extends ChannelInboundHandlerAdapter {
 
     private void handleHttpRequest(FullHttpRequest request, Channel channel) throws Exception {
         LOGGER.info("uri:{}", request.uri());
+        if ("/".equals(HttpUtils.getUrlWithoutParams(request.uri()))) {
+            String workspace = HttpUtils.parseRequestParams(request.uri()).get(WORKSPACE_KEY);
+            if (StringUtil.isNullOrEmpty(workspace)) {
+                workspace = UUID.randomUUID().toString();
+                doRedirect(request, workspace, channel);
+            } else {
+                transportRequest(request, channel);
+            }
+        } else {
+            transportRequest(request, channel);
+        }
+    }
+
+    private void transportRequest(FullHttpRequest request, Channel channel) throws Exception {
         RetryController.doRetry(serverConfig.getRetryCount(), 1000L, () -> {
             Response response = null;
             try {
@@ -104,6 +132,19 @@ public class NettyHttpHandler extends ChannelInboundHandlerAdapter {
                 }
             }
         });
+    }
+
+    private void doRedirect(FullHttpRequest request, String workspace, Channel channel) {
+        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.FOUND); //设置重定向响应码 （临时重定向、永久重定向）
+        HttpHeaders headers = response.headers();
+        headers.set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_HEADERS, "x-requested-with,content-type");
+        headers.set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_METHODS, "POST,GET");
+        headers.set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+        headers.set(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
+        String url = "?workspace=" + workspace;
+        headers.set(HttpHeaderNames.LOCATION, url); //重定向URL设置
+        channel.writeAndFlush(response)
+                .addListener(ChannelFutureListener.CLOSE);//解决写入完成后，客户端断开会报异常的问题
     }
 
     @Override

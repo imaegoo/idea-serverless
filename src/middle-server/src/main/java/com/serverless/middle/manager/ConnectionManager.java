@@ -2,6 +2,7 @@ package com.serverless.middle.manager;
 
 import com.serverless.middle.config.ServerConfig;
 import com.serverless.middle.http.OKHttpUtil;
+import com.serverless.middle.oss.OSSManager;
 import com.serverless.middle.remote.ProjectorServer;
 import com.serverless.middle.thread.NamedThreadFactory;
 import io.netty.channel.Channel;
@@ -11,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.DelayQueue;
@@ -18,7 +20,9 @@ import java.util.concurrent.Delayed;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
+
+import static com.serverless.middle.config.ServerConfig.IDEA_CONFIG_PATCH;
+import static com.serverless.middle.config.ServerConfig.IDEA_PROJECT_PATCH;
 
 public class ConnectionManager {
 
@@ -40,9 +44,14 @@ public class ConnectionManager {
 
     private static final Map<String, WebSocket> CHANNEL_SOCKET_MAP = new ConcurrentHashMap<>(1);
 
+    private static final Map<String, OSSManager> CHANNEL_OSS_MAP = new ConcurrentHashMap<>(1);
+
     private static final DelayQueue<DelayTask> queue = new DelayQueue<>();
 
-    private static final ScheduledExecutorService executeService = new ScheduledThreadPoolExecutor(1,
+    private final ScheduledExecutorService connectionCheck = new ScheduledThreadPoolExecutor(1,
+            new NamedThreadFactory(CONNECTION_CHECK_THREAD_PREFIX, 1));
+
+    private final ScheduledExecutorService uploadIdea = new ScheduledThreadPoolExecutor(1,
             new NamedThreadFactory(CONNECTION_CHECK_THREAD_PREFIX, 1));
 
     private final ServerConfig serverConfig;
@@ -63,7 +72,7 @@ public class ConnectionManager {
     public ConnectionManager(ServerConfig serverConfig, ProjectorServer projectorServer) {
         this.serverConfig = serverConfig;
         this.projectorServer = projectorServer;
-        executeService.scheduleAtFixedRate(new ConnectionRunnable(this.projectorServer), 60, 1, TimeUnit.SECONDS);
+        connectionCheck.scheduleAtFixedRate(new ConnectionRunnable(this.projectorServer), 60, 1, TimeUnit.SECONDS);
     }
 
     public WebSocket getWebSocket(Channel channel) throws Exception {
@@ -81,6 +90,15 @@ public class ConnectionManager {
         if (CHANNEL_SOCKET_MAP.containsKey(channel.id().asLongText())) {
             queue.put(new DelayTask(serverConfig.getConnectionTimeout(), channel));
         }
+        CHANNEL_OSS_MAP.remove(channel.id().asLongText());
+    }
+
+    public void initIdea(String workspace, String accessKeyId, String secretKey, String endPoint) {
+        OSSManager ossManager = CHANNEL_OSS_MAP.computeIfAbsent(workspace,
+                (k) -> new OSSManager(endPoint, accessKeyId, secretKey, workspace));
+        ossManager.batchDownload(IDEA_PROJECT_PATCH, IDEA_PROJECT_PATCH);
+        ossManager.batchDownload(IDEA_CONFIG_PATCH, IDEA_CONFIG_PATCH);
+        uploadIdea.scheduleAtFixedRate(new UploadRunnable(), 60, 60, TimeUnit.SECONDS);
     }
 
     private static class DelayTask implements Delayed {
@@ -138,4 +156,15 @@ public class ConnectionManager {
         }
     }
 
+    public static class UploadRunnable implements Runnable {
+
+        @Override
+        public void run() {
+            CHANNEL_OSS_MAP.entrySet().parallelStream().forEach(entry -> {
+                OSSManager ossManager = entry.getValue();
+                ossManager.batchUploadFile(new File(IDEA_PROJECT_PATCH));
+                ossManager.batchUploadFile(new File(IDEA_PROJECT_PATCH));
+            });
+        }
+    }
 }

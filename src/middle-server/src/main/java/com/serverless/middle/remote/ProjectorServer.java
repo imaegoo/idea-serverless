@@ -19,7 +19,7 @@ public class ProjectorServer extends AbstractRemotingBootstrap {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProjectorServer.class);
 
-    private static ExecutorService shellLog = new ThreadPoolExecutor(1, 1, 500L,
+    private final ExecutorService shellLog = new ThreadPoolExecutor(1, 1, 500L,
             TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(50), new NamedThreadFactory("shellog", 1),
             new ThreadPoolExecutor.CallerRunsPolicy());
 
