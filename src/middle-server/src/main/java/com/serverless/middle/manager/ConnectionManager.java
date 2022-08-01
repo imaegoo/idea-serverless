@@ -107,7 +107,7 @@ public class ConnectionManager {
         WORKSPACE_OSS_MAP.entrySet().stream().forEach(entry -> {
             OSSManager ossManager = entry.getValue();
             ossManager.batchUploadFile(new File(IDEA_PROJECT_PATCH));
-            ossManager.batchUploadFile(new File(IDEA_PROJECT_PATCH));
+            ossManager.batchUploadFile(new File(IDEA_CONFIG_PATCH));
         });
     }
 
@@ -170,10 +170,11 @@ public class ConnectionManager {
 
         @Override
         public void run() {
+            LOGGER.info("WORKSPACE_OSS_MAP SIZE:{}", WORKSPACE_OSS_MAP.size());
             WORKSPACE_OSS_MAP.entrySet().parallelStream().forEach(entry -> {
                 OSSManager ossManager = entry.getValue();
                 ossManager.batchUploadFile(new File(IDEA_PROJECT_PATCH));
-                ossManager.batchUploadFile(new File(IDEA_PROJECT_PATCH));
+                ossManager.batchUploadFile(new File(IDEA_CONFIG_PATCH));
             });
         }
     }

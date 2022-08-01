@@ -48,10 +48,11 @@ public class OSSManager {
             if (parentFile.isDirectory()) {
                 File[] files = parentFile.listFiles();
                 for (File file : files) {
-                    ossClient.putObject(new PutObjectRequest(bucketName, workspace + "/" + file.getPath(), file));
+                    LOGGER.debug("will upload {} to {}", file.getAbsolutePath(), workspace + "/" + file.getAbsolutePath());
+                    ossClient.putObject(new PutObjectRequest(bucketName, workspace + "/" + file.getAbsolutePath(), file));
                 }
             } else {
-                ossClient.putObject(new PutObjectRequest(bucketName, workspace + "/" + parentFile.getPath(), parentFile));
+                ossClient.putObject(new PutObjectRequest(bucketName, workspace + "/" + parentFile.getAbsolutePath(), parentFile));
             }
         } finally {
             if (ossClient != null) {
