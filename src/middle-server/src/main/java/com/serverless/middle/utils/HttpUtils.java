@@ -71,7 +71,7 @@ public class HttpUtils {
     }
 
     public static String buildOSSEndpoint(String region) {
-        StringBuilder prefix = new StringBuilder("oss-");
+        StringBuilder prefix = new StringBuilder("https://oss-");
         return prefix.append(region).append(".aliyuncs.com").toString();
     }
 }

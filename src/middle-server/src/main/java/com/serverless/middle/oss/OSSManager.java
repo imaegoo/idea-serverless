@@ -26,7 +26,7 @@ public class OSSManager {
 
     private String workspace;
 
-    private String bucketName = "twl-serverless";
+    private String bucketName = System.getenv("OSS_BUCKET_NAME");
 
     private static OSSClientBuilder ossClientBuilder = new OSSClientBuilder();
 
@@ -61,7 +61,7 @@ public class OSSManager {
     }
 
     public void uploadFile(String path, File file) {
-        OSS ossClient = ossClientBuilder.build(endpoint, accessKeyId, accessKeySecret);
+        OSS ossClient = ossClientBuilder.build(endpoint, accessKeyId, accessKeySecret, securityToken);
         ossClient.putObject(new PutObjectRequest(bucketName, path, file));
     }
 
@@ -70,7 +70,9 @@ public class OSSManager {
         if (target.exists()) {
             return;
         }
-        OSS ossClient = ossClientBuilder.build(endpoint, accessKeyId, accessKeySecret);
+        OSS ossClient = ossClientBuilder.build(endpoint, accessKeyId, accessKeySecret, securityToken);
+        LOGGER.info("endpoint:{}.accessKeyId:{}.accessKeySecret:{},securityToken:{},bucket:{}",
+                endpoint,accessKeyId,accessKeySecret,securityToken,bucketName);
         try {
             String userPath = workspace + "/" + prefix;
             ObjectListing objectListing = ossClient.listObjects(bucketName, userPath);
@@ -94,7 +96,7 @@ public class OSSManager {
     }
 
     public void downloadFile(String key, String targetPath) {
-        OSS ossClient = ossClientBuilder.build(endpoint, accessKeyId, accessKeySecret);
+        OSS ossClient = ossClientBuilder.build(endpoint, accessKeyId, accessKeySecret, securityToken);
         try {
             ossClient.getObject(new GetObjectRequest(bucketName, key), new File(targetPath));
         } finally {
