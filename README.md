@@ -41,6 +41,8 @@
 
 [![Deploy with Severless Devs](https://img.alicdn.com/imgextra/i1/O1CN01w5RFbX1v45s8TIXPz_!!6000000006118-55-tps-95-28.svg)](https://fcnext.console.aliyun.com/applications/create?template=idea-webide)
 
+部署类型请选择“直接部署”，不要选择“通过代码仓库部署”，否则部署不成功。
+
 ### 通过 [Cli](https://www.serverless-devs.com/serverless-devs/install) 部署
 
 需 Linux 环境，需安装 Node.js，按照 Cli 提示一步步操作。
