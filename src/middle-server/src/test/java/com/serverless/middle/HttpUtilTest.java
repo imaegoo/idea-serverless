@@ -31,6 +31,6 @@ public class HttpUtilTest {
     @Test
     public void testBuildOSSEndpoint() {
         String region = "cn-hangzhou";
-        Assertions.assertEquals("oss-cn-hangzhou.aliyuncs.com", HttpUtils.buildOSSEndpoint(region));
+        Assertions.assertEquals("https://oss-cn-hangzhou.aliyuncs.com", HttpUtils.buildOSSEndpoint(region));
     }
 }
