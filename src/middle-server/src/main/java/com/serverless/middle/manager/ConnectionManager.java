@@ -94,9 +94,9 @@ public class ConnectionManager {
         }
     }
 
-    public void initIdea(String workspace, String accessKeyId, String secretKey, String endPoint) {
+    public void initIdea(String workspace, String accessKeyId, String secretKey, String securityToken, String endPoint) {
         OSSManager ossManager = WORKSPACE_OSS_MAP.computeIfAbsent(workspace,
-                (k) -> new OSSManager(endPoint, accessKeyId, secretKey, workspace));
+                (k) -> new OSSManager(endPoint, accessKeyId, secretKey, workspace, securityToken));
         ossManager.batchDownload(IDEA_PROJECT_PATCH, IDEA_PROJECT_PATCH);
         ossManager.batchDownload(IDEA_CONFIG_PATCH, IDEA_CONFIG_PATCH);
     }

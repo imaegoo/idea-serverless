@@ -90,13 +90,14 @@ public class NettyHttpHandler extends ChannelInboundHandlerAdapter {
             String workspace = HttpUtils.parseRequestParams(request.uri()).get(WORKSPACE_KEY);
             String accessKeyId = request.headers().get("X-Fc-Access-Key-Id");
             String keySecret = request.headers().get("X-Fc-Access-Key-Secret");
+            String securityToken = request.headers().get("X-Fc-Security-Token");
             String endpoint = HttpUtils.buildOSSEndpoint(request.headers().get("X-Fc-Region"));
             if (StringUtil.isNullOrEmpty(workspace)) {
                 workspace = UUID.randomUUID().toString();
-                connectionManager.initIdea(workspace, accessKeyId, keySecret, endpoint);
+                connectionManager.initIdea(workspace, accessKeyId, keySecret, securityToken, endpoint);
                 doRedirect(workspace, channel);
             } else {
-                connectionManager.initIdea(workspace, accessKeyId, keySecret, endpoint);
+                connectionManager.initIdea(workspace, accessKeyId, keySecret, securityToken, endpoint);
                 transportRequest(request, channel);
             }
         } else {

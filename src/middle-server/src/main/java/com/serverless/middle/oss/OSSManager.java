@@ -22,21 +22,28 @@ public class OSSManager {
 
     private String accessKeySecret;
 
+    private String securityToken;
+
     private String workspace;
 
     private String bucketName = "twl-serverless";
 
     private static OSSClientBuilder ossClientBuilder = new OSSClientBuilder();
 
-    public OSSManager(String endpoint, String accessKeyId, String accessKeySecret, String workspace) {
+    public OSSManager(String endpoint, String accessKeyId, String accessKeySecret, String workspace, String securityToken) {
         this.endpoint = endpoint;
         this.accessKeyId = accessKeyId;
         this.accessKeySecret = accessKeySecret;
+        this.securityToken = securityToken;
         this.workspace = workspace;
     }
 
+    public OSSManager(String endpoint, String accessKeyId, String accessKeySecret, String workspace) {
+        this(endpoint, accessKeyId, accessKeySecret, workspace, null);
+    }
+
     public void batchUploadFile(File parentFile) {
-        OSS ossClient = ossClientBuilder.build(endpoint, accessKeyId, accessKeySecret);
+        OSS ossClient = ossClientBuilder.build(endpoint, accessKeyId, accessKeySecret, securityToken);
         try {
             if (parentFile.isDirectory()) {
                 File[] files = parentFile.listFiles();
