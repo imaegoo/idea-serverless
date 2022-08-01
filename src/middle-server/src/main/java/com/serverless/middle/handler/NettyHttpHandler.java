@@ -53,11 +53,6 @@ public class NettyHttpHandler extends ChannelInboundHandlerAdapter {
         if (msg instanceof FullHttpRequest) {
             FullHttpRequest fullHttpRequest = (FullHttpRequest) msg;
             if ("websocket".equals(fullHttpRequest.headers().get("Upgrade"))) {
-                String accessKeyId = fullHttpRequest.headers().get("X-Fc-Access-Key-Id");
-                String keySecret = fullHttpRequest.headers().get("X-Fc-Access-Key-Secret");
-                String endpoint = HttpUtils.buildOSSEndpoint(fullHttpRequest.headers().get("X-Fc-Region"));
-                String workspace = HttpUtils.parseRequestParams(fullHttpRequest.uri()).get(WORKSPACE_KEY);
-                connectionManager.initIdea(workspace, accessKeyId, keySecret, endpoint);
                 connectionManager.getWebSocket(ctx.channel());
                 ctx.fireChannelRead(msg);
             }
@@ -93,10 +88,15 @@ public class NettyHttpHandler extends ChannelInboundHandlerAdapter {
         LOGGER.info("uri:{}", request.uri());
         if ("/".equals(HttpUtils.getUrlWithoutParams(request.uri()))) {
             String workspace = HttpUtils.parseRequestParams(request.uri()).get(WORKSPACE_KEY);
+            String accessKeyId = request.headers().get("X-Fc-Access-Key-Id");
+            String keySecret = request.headers().get("X-Fc-Access-Key-Secret");
+            String endpoint = HttpUtils.buildOSSEndpoint(request.headers().get("X-Fc-Region"));
             if (StringUtil.isNullOrEmpty(workspace)) {
                 workspace = UUID.randomUUID().toString();
-                doRedirect(request, workspace, channel);
+                connectionManager.initIdea(workspace, accessKeyId, keySecret, endpoint);
+                doRedirect(workspace, channel);
             } else {
+                connectionManager.initIdea(workspace, accessKeyId, keySecret, endpoint);
                 transportRequest(request, channel);
             }
         } else {
@@ -134,7 +134,7 @@ public class NettyHttpHandler extends ChannelInboundHandlerAdapter {
         });
     }
 
-    private void doRedirect(FullHttpRequest request, String workspace, Channel channel) {
+    private void doRedirect(String workspace, Channel channel) {
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.FOUND); //设置重定向响应码 （临时重定向、永久重定向）
         HttpHeaders headers = response.headers();
         headers.set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_HEADERS, "x-requested-with,content-type");

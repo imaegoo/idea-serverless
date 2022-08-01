@@ -44,7 +44,7 @@ public class ConnectionManager {
 
     private static final Map<String, WebSocket> CHANNEL_SOCKET_MAP = new ConcurrentHashMap<>(1);
 
-    private static final Map<String, OSSManager> CHANNEL_OSS_MAP = new ConcurrentHashMap<>(1);
+    private static final Map<String, OSSManager> WORKSPACE_OSS_MAP = new ConcurrentHashMap<>(1);
 
     private static final DelayQueue<DelayTask> queue = new DelayQueue<>();
 
@@ -72,7 +72,9 @@ public class ConnectionManager {
     public ConnectionManager(ServerConfig serverConfig, ProjectorServer projectorServer) {
         this.serverConfig = serverConfig;
         this.projectorServer = projectorServer;
-        connectionCheck.scheduleAtFixedRate(new ConnectionRunnable(this.projectorServer), 60, 1, TimeUnit.SECONDS);
+        connectionCheck.scheduleAtFixedRate(new ConnectionRunnable(this.projectorServer),
+                60, 1, TimeUnit.SECONDS);
+        uploadIdea.scheduleAtFixedRate(new UploadRunnable(), 60, 60, TimeUnit.SECONDS);
     }
 
     public WebSocket getWebSocket(Channel channel) throws Exception {
@@ -90,15 +92,23 @@ public class ConnectionManager {
         if (CHANNEL_SOCKET_MAP.containsKey(channel.id().asLongText())) {
             queue.put(new DelayTask(serverConfig.getConnectionTimeout(), channel));
         }
-        CHANNEL_OSS_MAP.remove(channel.id().asLongText());
     }
 
     public void initIdea(String workspace, String accessKeyId, String secretKey, String endPoint) {
-        OSSManager ossManager = CHANNEL_OSS_MAP.computeIfAbsent(workspace,
+        OSSManager ossManager = WORKSPACE_OSS_MAP.computeIfAbsent(workspace,
                 (k) -> new OSSManager(endPoint, accessKeyId, secretKey, workspace));
         ossManager.batchDownload(IDEA_PROJECT_PATCH, IDEA_PROJECT_PATCH);
         ossManager.batchDownload(IDEA_CONFIG_PATCH, IDEA_CONFIG_PATCH);
-        uploadIdea.scheduleAtFixedRate(new UploadRunnable(), 60, 60, TimeUnit.SECONDS);
+    }
+
+    public void shutdown() {
+        connectionCheck.shutdown();
+        uploadIdea.shutdown();
+        WORKSPACE_OSS_MAP.entrySet().stream().forEach(entry -> {
+            OSSManager ossManager = entry.getValue();
+            ossManager.batchUploadFile(new File(IDEA_PROJECT_PATCH));
+            ossManager.batchUploadFile(new File(IDEA_PROJECT_PATCH));
+        });
     }
 
     private static class DelayTask implements Delayed {
@@ -160,7 +170,7 @@ public class ConnectionManager {
 
         @Override
         public void run() {
-            CHANNEL_OSS_MAP.entrySet().parallelStream().forEach(entry -> {
+            WORKSPACE_OSS_MAP.entrySet().parallelStream().forEach(entry -> {
                 OSSManager ossManager = entry.getValue();
                 ossManager.batchUploadFile(new File(IDEA_PROJECT_PATCH));
                 ossManager.batchUploadFile(new File(IDEA_PROJECT_PATCH));

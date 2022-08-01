@@ -59,6 +59,10 @@ public class OSSManager {
     }
 
     public void batchDownload(String prefix, String targetPath) {
+        File target = new File(targetPath);
+        if (target.exists()) {
+            return;
+        }
         OSS ossClient = ossClientBuilder.build(endpoint, accessKeyId, accessKeySecret);
         try {
             String userPath = workspace + "/" + prefix;
