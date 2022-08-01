@@ -1,5 +1,4 @@
 #!/bin/sh
-set -x
 echo "building middle server"
 cd middle-server
 mvn package
