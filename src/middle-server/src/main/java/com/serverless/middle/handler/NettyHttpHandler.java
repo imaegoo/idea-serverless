@@ -144,8 +144,7 @@ public class NettyHttpHandler extends ChannelInboundHandlerAdapter {
         headers.set(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
         String url = "?workspace=" + workspace;
         headers.set(HttpHeaderNames.LOCATION, url); //重定向URL设置
-        channel.writeAndFlush(response)
-                .addListener(ChannelFutureListener.CLOSE);//解决写入完成后，客户端断开会报异常的问题
+        channel.writeAndFlush(response);
     }
 
     @Override

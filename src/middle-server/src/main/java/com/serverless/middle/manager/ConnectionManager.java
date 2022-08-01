@@ -42,7 +42,7 @@ public class ConnectionManager {
 
     private static volatile ConnectionManager instance;
 
-    private static final Map<String, WebSocket> CHANNEL_SOCKET_MAP = new ConcurrentHashMap<>(1);
+    private static final Map<Channel, WebSocket> CHANNEL_SOCKET_MAP = new ConcurrentHashMap<>(1);
 
     private static final Map<String, OSSManager> WORKSPACE_OSS_MAP = new ConcurrentHashMap<>(1);
 
@@ -79,7 +79,7 @@ public class ConnectionManager {
 
     public WebSocket getWebSocket(Channel channel) throws Exception {
         projectorServer.start();
-        return CHANNEL_SOCKET_MAP.computeIfAbsent(channel.id().asLongText(),
+        return CHANNEL_SOCKET_MAP.computeIfAbsent(channel,
                 k -> OKHttpUtil.getInstance().doConnectionSocket(WS_URL, channel));
     }
 
@@ -89,7 +89,7 @@ public class ConnectionManager {
     }
 
     public void setUnConnectioned(Channel channel) {
-        if (CHANNEL_SOCKET_MAP.containsKey(channel.id().asLongText())) {
+        if (CHANNEL_SOCKET_MAP.containsKey(channel)) {
             queue.put(new DelayTask(serverConfig.getConnectionTimeout(), channel));
         }
     }
@@ -155,7 +155,7 @@ public class ConnectionManager {
             if (delayTask == null) {
                 return;
             }
-            WebSocket socket = CHANNEL_SOCKET_MAP.remove(delayTask.getChannel().id());
+            WebSocket socket = CHANNEL_SOCKET_MAP.remove(delayTask.getChannel());
             if (socket != null) {
                 socket.close(1000, "timeout close");
             }
