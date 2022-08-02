@@ -49,7 +49,7 @@ public class OSSManager {
             if (parentFile.isDirectory()) {
                 File[] files = parentFile.listFiles();
                 for (File file : files) {
-                    LOGGER.debug("will upload {} to {}", file.getAbsolutePath(), workspace + "/" + file.getAbsolutePath());
+                    LOGGER.info("will upload {} to {}", file.getAbsolutePath(), workspace + "/" + file.getAbsolutePath());
                     ossClient.putObject(new PutObjectRequest(bucketName, workspace + "/" + file.getAbsolutePath(), file));
                 }
             } else {
@@ -80,7 +80,7 @@ public class OSSManager {
             ObjectListing objectListing = ossClient.listObjects(bucketName, userPath);
             List<OSSObjectSummary> objectSummaries = objectListing.getObjectSummaries();
             for (OSSObjectSummary objectSummary : objectSummaries) {
-                LOGGER.debug("will download:{}", objectSummary.getKey());
+                LOGGER.info("will download:{}", objectSummary.getKey());
                 String key = objectSummary.getKey();
                 String simpleFileName = getSimpleFileName(userPath, key);
                 File file = new File(targetPath);

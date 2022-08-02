@@ -77,7 +77,9 @@ public class ProjectorServer extends AbstractRemotingBootstrap {
                 }
             }
         } else {
-            LOGGER.info("Projector is already started");
+            if(LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Projector is already started");
+            }
         }
     }
 
