@@ -43,6 +43,7 @@ public class OSSManager {
     }
 
     public void batchUploadFile(File parentFile) {
+        LOGGER.info("will upload path：{}", parentFile.getAbsolutePath());
         OSS ossClient = ossClientBuilder.build(endpoint, accessKeyId, accessKeySecret, securityToken);
         try {
             if (parentFile.isDirectory()) {
