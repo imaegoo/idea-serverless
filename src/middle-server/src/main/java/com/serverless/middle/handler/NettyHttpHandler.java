@@ -8,7 +8,6 @@ import com.serverless.middle.utils.HttpUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
@@ -19,6 +18,7 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import io.netty.util.ReferenceCountUtil;
 import io.netty.util.internal.StringUtil;
 import kotlin.Pair;
 import okhttp3.Response;
@@ -55,8 +55,10 @@ public class NettyHttpHandler extends ChannelInboundHandlerAdapter {
             if ("websocket".equals(fullHttpRequest.headers().get("Upgrade"))) {
                 connectionManager.getWebSocket(ctx.channel());
                 ctx.fireChannelRead(msg);
+            } else {
+                handleHttpRequest(fullHttpRequest, ctx.channel());
+                ReferenceCountUtil.release(msg);
             }
-            handleHttpRequest(fullHttpRequest, ctx.channel());
         }
         if (msg instanceof TextWebSocketFrame) {
             TextWebSocketFrame webSocketFrame = (TextWebSocketFrame) msg;

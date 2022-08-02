@@ -40,6 +40,8 @@ public class ConnectionManager {
 
     private static final String CONNECTION_CHECK_THREAD_PREFIX = "connectionCheck";
 
+    private static final String UPLOAD_FILE = "uploadFile";
+
     private static volatile ConnectionManager instance;
 
     private static final Map<Channel, WebSocket> CHANNEL_SOCKET_MAP = new ConcurrentHashMap<>(1);
@@ -52,7 +54,7 @@ public class ConnectionManager {
             new NamedThreadFactory(CONNECTION_CHECK_THREAD_PREFIX, 1));
 
     private final ScheduledExecutorService uploadIdea = new ScheduledThreadPoolExecutor(1,
-            new NamedThreadFactory(CONNECTION_CHECK_THREAD_PREFIX, 1));
+            new NamedThreadFactory(UPLOAD_FILE, 1));
 
     private final ServerConfig serverConfig;
 
@@ -173,8 +175,18 @@ public class ConnectionManager {
             LOGGER.info("WORKSPACE_OSS_MAP SIZE:{}", WORKSPACE_OSS_MAP.size());
             WORKSPACE_OSS_MAP.entrySet().parallelStream().forEach(entry -> {
                 OSSManager ossManager = entry.getValue();
-                ossManager.batchUploadFile(new File(IDEA_PROJECT_PATCH));
-                ossManager.batchUploadFile(new File(IDEA_CONFIG_PATCH));
+                File ideaProjectorFile = new File(IDEA_PROJECT_PATCH);
+                if (!ideaProjectorFile.exists()) {
+                    LOGGER.info("{} doesn't exist", IDEA_PROJECT_PATCH);
+                } else {
+                    ossManager.batchUploadFile(ideaProjectorFile);
+                }
+                File ideaConfigFile = new File(IDEA_CONFIG_PATCH);
+                if (!ideaProjectorFile.exists()) {
+                    LOGGER.info("{} doesn't exist", IDEA_CONFIG_PATCH);
+                } else {
+                    ossManager.batchUploadFile(ideaConfigFile);
+                }
             });
         }
     }
