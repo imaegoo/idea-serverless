@@ -6,10 +6,12 @@ import com.aliyun.oss.model.GetObjectRequest;
 import com.aliyun.oss.model.OSSObjectSummary;
 import com.aliyun.oss.model.ObjectListing;
 import com.aliyun.oss.model.PutObjectRequest;
+import com.serverless.middle.utils.TarUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 public class OSSManager {
@@ -30,6 +32,10 @@ public class OSSManager {
 
     private static OSSClientBuilder ossClientBuilder = new OSSClientBuilder();
 
+    private static final String TEMP_PATH = "/root/IdeaTemp/";
+
+    private static final String IDEA_PATH = "/root/";
+
     public OSSManager(String endpoint, String accessKeyId, String accessKeySecret, String workspace, String securityToken) {
         this.endpoint = endpoint;
         this.accessKeyId = accessKeyId;
@@ -42,23 +48,26 @@ public class OSSManager {
         this(endpoint, accessKeyId, accessKeySecret, workspace, null);
     }
 
-    public void batchUploadFile(File parentFile) {
-        LOGGER.info("will upload path：{}", parentFile.getAbsolutePath());
+    public void batchUploadFile(String parent) {
+        LOGGER.info("will upload path：{}", parent);
+        File parentFile = new File(parent);
+        String tarName = parentFile.getName() + ".tar.gz";
+        String tarPath = TEMP_PATH + tarName;
         OSS ossClient = ossClientBuilder.build(endpoint, accessKeyId, accessKeySecret, securityToken);
         try {
-            if (parentFile.isDirectory()) {
-                File[] files = parentFile.listFiles();
-                for (File file : files) {
-                    LOGGER.info("will upload {} to {}", file.getAbsolutePath(), workspace + "/" + file.getAbsolutePath());
-                    ossClient.putObject(new PutObjectRequest(bucketName, workspace + "/" + file.getAbsolutePath(), file));
-                }
-            } else {
-                ossClient.putObject(new PutObjectRequest(bucketName, workspace + "/" + parentFile.getAbsolutePath(), parentFile));
-            }
+            TarUtils.compressTar(parent, tarPath);
+            LOGGER.info("will upload {} to {}", tarPath, workspace + "/" + tarName);
+            ossClient.putObject(new PutObjectRequest(bucketName, workspace + "/" + tarName,
+                    new File(tarPath)));
+
+        } catch (IOException e) {
+            e.printStackTrace();
         } finally {
             if (ossClient != null) {
                 ossClient.shutdown();
             }
+            File tarFile = new File(tarPath);
+            tarFile.delete();
         }
     }
 
@@ -67,32 +76,30 @@ public class OSSManager {
         ossClient.putObject(new PutObjectRequest(bucketName, path, file));
     }
 
-    public void batchDownload(String prefix, String targetPath) {
-        File target = new File(targetPath);
-        if (target.exists()) {
-            return;
-        }
+    public void batchDownload() {
         OSS ossClient = ossClientBuilder.build(endpoint, accessKeyId, accessKeySecret, securityToken);
         LOGGER.info("endpoint:{}.accessKeyId:{}.accessKeySecret:{},securityToken:{},bucket:{}",
-                endpoint,accessKeyId,accessKeySecret,securityToken,bucketName);
+                endpoint, accessKeyId, accessKeySecret, securityToken, bucketName);
         try {
-            String userPath = workspace + "/" + prefix;
-            ObjectListing objectListing = ossClient.listObjects(bucketName, userPath);
+            ObjectListing objectListing = ossClient.listObjects(bucketName, workspace);
             List<OSSObjectSummary> objectSummaries = objectListing.getObjectSummaries();
             for (OSSObjectSummary objectSummary : objectSummaries) {
                 LOGGER.info("will download:{}", objectSummary.getKey());
                 String key = objectSummary.getKey();
-                String simpleFileName = getSimpleFileName(userPath, key);
-                File file = new File(targetPath);
-                if (!file.exists()) {
-                    file.mkdirs();
-                }
-                ossClient.getObject(new GetObjectRequest(bucketName, key),
-                        new File(file.getAbsolutePath() + "/" + simpleFileName));
+                String simpleFileName = getSimpleFileName(workspace, key);
+                File tempTarFile = new File(TEMP_PATH + simpleFileName);
+                ossClient.getObject(new GetObjectRequest(bucketName, key), tempTarFile);
+                TarUtils.unCompressTar(tempTarFile.getAbsolutePath(), IDEA_PATH);
             }
+        } catch (IOException e) {
+            e.printStackTrace();
         } finally {
             if (ossClient != null) {
                 ossClient.shutdown();
+            }
+            File temp = new File(TEMP_PATH);
+            for (File file : temp.listFiles()) {
+                file.delete();
             }
         }
     }

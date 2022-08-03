@@ -99,8 +99,7 @@ public class ConnectionManager {
     public void initIdea(String workspace, String accessKeyId, String secretKey, String securityToken, String endPoint) {
         OSSManager ossManager = WORKSPACE_OSS_MAP.computeIfAbsent(workspace,
                 (k) -> new OSSManager(endPoint, accessKeyId, secretKey, workspace, securityToken));
-        ossManager.batchDownload(IDEA_PROJECT_PATCH, IDEA_PROJECT_PATCH);
-        ossManager.batchDownload(IDEA_CONFIG_PATCH, IDEA_CONFIG_PATCH);
+        ossManager.batchDownload();
     }
 
     public void shutdown() {
@@ -108,8 +107,8 @@ public class ConnectionManager {
         uploadIdea.shutdown();
         WORKSPACE_OSS_MAP.entrySet().stream().forEach(entry -> {
             OSSManager ossManager = entry.getValue();
-            ossManager.batchUploadFile(new File(IDEA_PROJECT_PATCH));
-            ossManager.batchUploadFile(new File(IDEA_CONFIG_PATCH));
+            ossManager.batchUploadFile(IDEA_PROJECT_PATCH);
+            ossManager.batchUploadFile(IDEA_CONFIG_PATCH);
         });
     }
 
@@ -179,13 +178,13 @@ public class ConnectionManager {
                 if (!ideaProjectorFile.exists()) {
                     LOGGER.info("{} doesn't exist", IDEA_PROJECT_PATCH);
                 } else {
-                    ossManager.batchUploadFile(ideaProjectorFile);
+                    ossManager.batchUploadFile(IDEA_PROJECT_PATCH);
                 }
                 File ideaConfigFile = new File(IDEA_CONFIG_PATCH);
                 if (!ideaProjectorFile.exists()) {
                     LOGGER.info("{} doesn't exist", IDEA_CONFIG_PATCH);
                 } else {
-                    ossManager.batchUploadFile(ideaConfigFile);
+                    ossManager.batchUploadFile(IDEA_CONFIG_PATCH);
                 }
             });
         }
