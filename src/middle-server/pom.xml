@@ -51,8 +51,13 @@
             <artifactId>aliyun-sdk-oss</artifactId>
             <version>3.15.0</version>
         </dependency>
-
-
+        <!-- compress-->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.20</version>
+        </dependency>
+        <!-- junit-->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>

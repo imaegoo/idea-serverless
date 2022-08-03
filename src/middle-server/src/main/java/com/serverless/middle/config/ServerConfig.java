@@ -32,9 +32,9 @@ public class ServerConfig extends BaseConfig {
 
     private static final long DEFAULT_PROJECTOR_CONNECTION_TIMEOUT = 1000 * 20;
 
-    public static final String IDEA_PROJECT_PATCH = "/root/IdeaProjects/";
+    public static final String IDEA_PROJECT_PATCH = "/root/IdeaProjects";
 
-    public static final String IDEA_CONFIG_PATCH = "/root/.config/JetBrains/";
+    public static final String IDEA_CONFIG_PATCH = "/root/.config";
 
     /**
      * get netty boss thread size
