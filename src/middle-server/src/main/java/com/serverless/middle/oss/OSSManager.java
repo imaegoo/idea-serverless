@@ -98,8 +98,10 @@ public class OSSManager {
                 ossClient.shutdown();
             }
             File temp = new File(TEMP_PATH);
-            for (File file : temp.listFiles()) {
-                file.delete();
+            if (temp.listFiles() != null && temp.listFiles().length > 0) {
+                for (File file : temp.listFiles()) {
+                    file.delete();
+                }
             }
         }
     }
