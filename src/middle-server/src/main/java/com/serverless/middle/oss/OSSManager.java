@@ -42,6 +42,10 @@ public class OSSManager {
         this.accessKeySecret = accessKeySecret;
         this.securityToken = securityToken;
         this.workspace = workspace;
+        File file = new File(TEMP_PATH);
+        if(!file.exists()){
+            file.mkdirs();
+        }
     }
 
     public OSSManager(String endpoint, String accessKeyId, String accessKeySecret, String workspace) {
