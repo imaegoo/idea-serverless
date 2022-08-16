@@ -40,7 +40,7 @@ services:
         codeUri: .
         environmentVariables:
           PATH: >-
-            /code/js/node_modules/.bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+            /code/maven/apache-maven-3.8.6/bin:/code/js/node_modules/.bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
           OSS_BUCKET_NAME: "{{ ossBucket }}"
           TZ: "{{ timeZone }}"
         customRuntimeConfig:

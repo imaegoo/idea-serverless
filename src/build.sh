@@ -7,6 +7,13 @@ echo "installing serverless cli"
 cd js
 npm install
 cd ..
+echo "installing maven"
+mkdir -p maven
+cd maven
+curl -LO https://dlcdn.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz
+tar -xzf apache-maven-3.8.6-bin.tar.gz
+rm -f apache-maven-3.8.6-bin.tar.gz
+cd ..
 echo "creating temp folder"
 rm -rf ./.temp/
 mkdir -p .temp
