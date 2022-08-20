@@ -1,8 +1,5 @@
 # IntelliJ IDEA on web, but serverless
 
-> ⚠️ 这是一个仍在开发的项目，请过段时间再来看看吧。<br>
-> ⚠️ this is still a work-in-progress project, check back in a while.
-
 ----
 
 [![Package type](https://editor.devsapp.cn/icon?package=idea-webide&type=packageType)](https://www.serverless-devs.com)
@@ -26,11 +23,11 @@
 1. 不重复造轮子！截至 2022 年 7 月 14 日，[Google 搜索](https://www.google.com/search?q=deploy+intellij+to+serverless) 中还未出现成功将 Intellij IDE 部署到 Serverless 函数计算的实践案例。
 1. IDEA 的 Java 开发体验更好，默认示例使用的 VSCode 难以胜任 Java 等语言开发场景。
 1. 集成 Serverless Devs CLI 等常用 FC 开发工具，支持快速开发和测试 FC Java runtime 函数。
+1. 配置同步、代码同步。
+1. 多租安全隔离。
 
 接下来还要继续实现什么功能？
 
-1. TODO: 配置同步、代码同步。
-1. TODO: 多租安全隔离。
 1. TODO: 首屏加载时间过长。受限于 projector 的启动时间长，可以在 projector 启动过程时先返回一个静态 loading 页，页面风格可以参考云效和 GitHub Codespaces，每秒调 status API 询问启动状态，当启动状态为 true 时，再发起真正的 websocket 连接。
 
 ## 使用说明
@@ -54,7 +51,10 @@ cd idea-webide
 s deploy
 ```
 
-**_TODO: 为了防止因无法使用影响评测，下面我提供了视频演示。_**
+### 视频演示
+
+为了防止因无法使用影响评测，下面我提供了视频演示。<br>
+[bilibili.com/video/BV1md4y1P7ZA](https://www.bilibili.com/video/BV1md4y1P7ZA)
 
 ## 实现说明
 
