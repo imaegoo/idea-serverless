@@ -10,6 +10,8 @@
 
 ## 技术架构实现、原理以及亮点
 
+![Architecture](./img/arch.png)
+
 我是如何使用阿里云的一个或者多个 Serverless 服务实现 Web IDE 服务？
 
 1. 通过 [projector-server](https://github.com/JetBrains/projector-server) 将 IDE 封装为远程服务。
@@ -22,7 +24,9 @@
 1. IDEA 的 Java 开发体验更好，默认示例使用的 VSCode 难以胜任 Java 等语言开发场景。
 1. 集成 Serverless Devs CLI 等常用 FC 开发工具，支持快速开发和测试 FC Java runtime 函数。
 1. 配置同步、代码同步。
+    > 我们实现了一个中间件管理浏览器与 Projector Server 之间的连接，用户通过 WebSocket 协议连接中间件，中间件将请求转发给 Projector，中间件可以监控连接，当连接断开时，会触发配置同步、代码同步，此外，每分钟也会定时自动同步，同步过程为打包（tgz）并上传到阿里云 OSS。此外，我们考虑到用户可能需要维护多个项目，所以开发了 workspace，当用户第一次访问时，会自动创建一个 workspace，可以在地址栏看到 workspace id，每个 workspace 都会同步到 OSS 中的一个独立的目录，当用户关闭并重新打开时，会根据地址中的 workspace id 恢复相应的配置和代码，以此来实现多项目管理。
 1. 多租安全隔离。
+    > 在 IDEA 中实现多租隔离非常困难，即使前面我们已经为不同的用户分配了不同的 workspace，也无法阻止用户通过 IDE 中的 "Open Folder"、"Terminal" 功能访问其他租户的文件。好在阿里云函数计算的实例是天然支持安全隔离的，当 `instanceConcurrency` 设为 1 时，一个运行实例只接收一个连接，多个用户访问时，会自动启动新的实例，就不会冲突了。
 
 接下来还要继续实现什么功能？
 
